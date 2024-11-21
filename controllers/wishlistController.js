@@ -20,9 +20,9 @@ const addToWishlist = async(req,res) => {
         }
         findProduct.quantity++
         await findWishlist.save()
-        res.status(201).json({message: "wishlist updated successfully"})
+        res.status(201).json({message: "wishlist updated successfully", wishlist: findWishlist})
     }catch(error){
-        res.status(500).json({message: "error occured while adding product to wishlist"})
+        res.status(500).json({message: "error occured while adding product to wishlist", error: error.message})
     }
 }
 const getWishlist = async(req,res) => {
@@ -38,10 +38,32 @@ const getWishlist = async(req,res) => {
         if(findWishlist.items.length === 0){
             return res.status(404).json({message: "no items in wishlist"})
         }
-        res.status(200).json({message: "items in wishlist fetched successfully", items: findWishlist.items})
+        res.status(200).json({message: "items in wishlist fetched successfully", items: findWishlist})
     }catch(error)
     {
-        res.status(500).json({message: "error occured while fetching wishlist"})
+        res.status(500).json({message: "error occured while fetching wishlist", error: error.message})
     }
 }
-module.exports = {addToWishlist,getWishlist}
+const incFromWishlist = async(req,res) => {
+    try{
+        const {userId, product} = req.body
+        const findWishlist = await Wishlist.findOne({userId})
+        if(!findWishlist){
+            return res.status(404).json({message: "no wishlist found"})
+        }
+        if(findWishlist.items.length === 0){
+            return res.status(404).json({message: "no items in wishlist"})
+        }
+        findWishlist.items.find((item) => {
+            if(item.product.toString() === product.toString())
+            {
+                item.quantity++
+            }
+        })
+        await findWishlist.save()
+        res.status(200).json({message: "wishlist updated successfully", wishlist : findWishlist})
+    }catch(error){
+        res.status(500).json({message: "error occured while incrementing item", error: error.message})
+    }
+}
+module.exports = {addToWishlist,getWishlist,incFromWishlist}
