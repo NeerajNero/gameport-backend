@@ -2,11 +2,8 @@ const User = require('../models/user.model')
 const Cart = require('../models/cart.model')
 const addToCart = async(req,res) => {
     try{
+        console.log(req.body)
         const {userId, items} = req.body
-        const findUser = await User.findOne({_id: userId})
-        if(!findUser){
-            return res.status(404).json({message: "User doesnt exist"})
-        }
         const findCart = await Cart.findOne({userId})
         if(!findCart){
             const cartItems = {
@@ -16,22 +13,20 @@ const addToCart = async(req,res) => {
             const saveCart = new Cart(cartItems);
             await saveCart.save();
             res.status(201).json({message: "item added successfully", cart: saveCart})
-        }else{
-            items.forEach((item) => {
-                const existingItem = findCart.items.find((cartItem) => cartItem.product.toString() === item.product)
-                if(existingItem){
-                    existingItem.quantity+= item.quantity;
-                }else{
-                    findCart.items.push(item)   
-                }
-            })
-            await findCart.save();
-            return res.status(200).json({ message: "Cart updated successfully", cart: findCart });
         }
+        const findProduct = await findCart.items.find((item) => item.product.toString() === items[0].product.toString())
+        if(!findProduct){
+            findCart.items.push(items[0])
+            await findCart.save()
+            return res.status(200).json({message: "item added, cart updated successfully", item: items[0]})
+        }
+        findProduct.quantity++
+        await findCart.save()
+        res.status(200).json({message: "item quantity incremented, cart updated successfully", item: findProduct})
 
     }catch(error){
         console.log(error)
-        res.status(500).json({message: "error occured while adding to cart"})
+        res.status(500).json({message: "error occured while adding to cart",error: error.message})
     }
 } 
 
