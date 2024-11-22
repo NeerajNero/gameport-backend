@@ -2,7 +2,6 @@ const User = require('../models/user.model')
 const Cart = require('../models/cart.model')
 const addToCart = async(req,res) => {
     try{
-        console.log(req.body)
         const {userId, items} = req.body
         const findCart = await Cart.findOne({userId})
         if(!findCart){
@@ -94,8 +93,9 @@ const deleteProduct = async(req,res) => {
 }
 const getCart = async(req,res) => {
     try{
-        const {userId} = req.body
-        const cartItems = await Cart.findOne({userId})
+        const {user} = req.user
+        const {userId} = user
+        const cartItems = await Cart.findOne({userId}).populate('userId')
         if(!cartItems){
            return res.status(404).json({message: "Cart not found"})
         }

@@ -46,7 +46,7 @@ const login = async(req,res) => {
         res.cookie("access_token", token, {httpOnly: true, secure: false, maxAge: 24 * 60 * 60 * 1000})
         res.status(200).json({message: "login successfull", user})
     }catch(error){
-        res.status(500).json({message: "login failed"})
+        res.status(500).json({message: "login failed", error: error.message})
     }
 }
 const getUser = async(req,res) => {
