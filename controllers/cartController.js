@@ -2,7 +2,9 @@ const User = require('../models/user.model')
 const Cart = require('../models/cart.model')
 const addToCart = async(req,res) => {
     try{
-        const {userId, items} = req.body
+        const {items} = req.body
+        const {user} = req.user
+        const {userId} = user
         const findCart = await Cart.findOne({userId})
         if(!findCart){
             const cartItems = {
@@ -11,17 +13,20 @@ const addToCart = async(req,res) => {
             }
             const saveCart = new Cart(cartItems);
             await saveCart.save();
-            res.status(201).json({message: "item added successfully", item: saveCart.items[0]})
+            const populatedCart = await saveCart.populate({path: 'items.0.product'})
+            res.status(201).json({message: "item added successfully", item: populatedCart.items[0]})
         }
         const findProduct = await findCart.items.find((item) => item.product.toString() === items[0].product.toString())
         if(!findProduct){
             findCart.items.push(items[0])
             await findCart.save()
-            return res.status(200).json({message: "item added, cart updated successfully", item: items[0]})
+            const populatedCart = await findCart.populate({path: `items.${findCart.items.length - 1}.product`})
+            return res.status(200).json({message: "item added, cart updated successfully", item: populatedCart.items[findCart.items.length - 1]})
         }
         findProduct.quantity++
         await findCart.save()
-        res.status(200).json({message: "item quantity incremented, cart updated successfully", item: findProduct})
+        const populatedCart = await findCart.populate({path: `items.${findCart.items.indexOf(findProduct)}.product`})
+        res.status(200).json({message: "item quantity incremented, cart updated successfully", item: populatedCart.items[findCart.items.indexOf(findProduct)]})
 
     }catch(error){
         console.log(error)

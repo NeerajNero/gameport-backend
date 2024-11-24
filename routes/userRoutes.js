@@ -6,5 +6,5 @@ const checkToken = require('../middleware/checkToken')
 router.post('/register', register)
 router.post('/login', login)
 router.get('/getUser', checkToken, getUser)
-router.get('/logout', logout)
+router.get('/logout',checkToken, logout)
 module.exports = router
