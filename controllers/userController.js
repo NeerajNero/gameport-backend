@@ -59,4 +59,12 @@ const getUser = async(req,res) => {
         res.status(500).json({message: "error occured while fetching user"})
     }
 }
-module.exports = {register, login, getUser}
+const logout = async(req,res) => {
+    try{
+        res.clearCookie("access_token", {path: "/"})
+        res.status(200).json({message: "logged out successfully"})
+    }catch(error){
+        res.status(500).json({message: "error occured while performing logout", error: error.message})
+    }
+}
+module.exports = {register, login, getUser, logout}

@@ -11,7 +11,7 @@ const addToCart = async(req,res) => {
             }
             const saveCart = new Cart(cartItems);
             await saveCart.save();
-            res.status(201).json({message: "item added successfully", cart: saveCart})
+            res.status(201).json({message: "item added successfully", item: saveCart.items[0]})
         }
         const findProduct = await findCart.items.find((item) => item.product.toString() === items[0].product.toString())
         if(!findProduct){
@@ -95,7 +95,7 @@ const getCart = async(req,res) => {
     try{
         const {user} = req.user
         const {userId} = user
-        const cartItems = await Cart.findOne({userId}).populate('userId')
+        const cartItems = await Cart.findOne({userId}).populate({path: 'items.product'})
         if(!cartItems){
            return res.status(404).json({message: "Cart not found"})
         }
