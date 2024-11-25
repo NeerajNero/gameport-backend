@@ -79,8 +79,10 @@ const incFromCart = async(req,res) => {
 }
 const deleteProduct = async(req,res) => {
     try{
-        const {id, productId} = req.body
-        const findCart = await Cart.findOne({userId: id})
+        const {productId} = req.body
+        const {user} = req.user
+        const {userId} = user
+        const findCart = await Cart.findOne({userId})
         if(!findCart){
             return res.status(404).json({message: "cart not found"})
         }
@@ -91,7 +93,7 @@ const deleteProduct = async(req,res) => {
         }
         findCart.items = findCart.items.filter((item) => item.product.toString() !== productId.toString())
         await findCart.save()
-        return res.status(200).json({ message: "Item deleted successfully", cart: findCart });
+        return res.status(200).json({ message: "Item deleted successfully", item });
     }catch(error){
         res.status(500).json({message: "error occured while deleting", error: error.message})
     }
