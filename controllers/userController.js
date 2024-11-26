@@ -67,4 +67,17 @@ const logout = async(req,res) => {
         res.status(500).json({message: "error occured while performing logout", error: error.message})
     }
 }
-module.exports = {register, login, getUser, logout}
+const getFullUserDetails = async(req,res) => {
+    try{
+        const {user} = req.user
+        const {userId} = user
+        const findUser = await User.findById(userId)
+        if(!findUser){
+            res.status(404).json({message: "user not found"})
+        }
+        res.status(200).json(findUser)
+    }catch(error){
+        return res.status(500).json({message: "an error occured while fetching user details"})
+    }
+}
+module.exports = {register, login, getUser, logout, getFullUserDetails}
