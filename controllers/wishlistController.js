@@ -1,33 +1,44 @@
 const Wishlist = require('../models/wishlist.model')
 const addToWishlist = async(req,res) => {
-    try{
-        const {userId, items} = req.body;
-        const findWishlist = await Wishlist.findOne({userId})
+    try {
+        const { product } = req.body;
+        const {user} = req.user
+        const findWishlist = await Wishlist.findOne({userId: user.userId})
         if(!findWishlist){
-            const newWishlist = {
-                userId,
-                items
-            }
-            const saveWishlist = new Wishlist(newWishlist)
-            await saveWishlist.save()
-            return res.status(201).json({ message: "Wishlist created successfully" });
+          const newWishlist = {
+            userId: user.userId,
+            items: [
+              {
+                product: product
+              }
+            ]
+          }
+          const saveNewWishlist = new Wishlist(newWishlist);
+          await saveNewWishlist.save();
+          const populatedWishlist = await saveNewWishlist.populate({path: 'items.product'})
+          return res.status(201).json({message: "no wishlist found, so new wishlist has been created and saved",item: populatedWishlist.items[0]})
         }
-        const findProduct = await findWishlist.items.find((item) => item.product.toString() === items[0].product.toString())
-        if(!findProduct){
-            findWishlist.items.push(items[0])
-            await findWishlist.save()
-            return res.status(201).json({ message: "Wishlist updated successfully" });
-        }
-        findProduct.quantity++
-        await findWishlist.save()
-        res.status(201).json({message: "wishlist updated successfully", wishlist: findWishlist})
+          const productIndex = await findWishlist.items.findIndex((p) => product.toString() === p.product.toString())
+          if(productIndex === -1){
+                const productToBeAdded = {product}
+                await findWishlist.items.push(productToBeAdded)
+                await findWishlist.save();
+                const populatedData = await findWishlist.populate({path: 'items.product'})
+                return res.status(201).json({message: "product added successfully", item: populatedData.items[productIndex]})
+          }else{
+                findWishlist.items[productIndex].quantity+= 1;
+                await findWishlist.save()
+                const populatedData = await findWishlist.populate({path: 'items.product'})
+                return res.status(201).json({message: "product quantity updated successfully", item: populatedData.items[productIndex]})
+          }
     }catch(error){
-        res.status(500).json({message: "error occured while adding product to wishlist", error: error.message})
+      res.status(500).json({message: "unexpected error occured",error:  error.message})
     }
-}
+  }
 const getWishlist = async(req,res) => {
     try{
-        const {userId} = req.body
+        const {user} = req.user
+        const {userId} = user
         if (!userId) {
             return res.status(400).json({ message: "User ID is required" });
         }
@@ -38,7 +49,8 @@ const getWishlist = async(req,res) => {
         if(findWishlist.items.length === 0){
             return res.status(404).json({message: "no items in wishlist"})
         }
-        res.status(200).json({message: "items in wishlist fetched successfully", items: findWishlist})
+        const populatedData = await findWishlist.populate({path: 'items.product'})
+        res.status(200).json({message: "items in wishlist fetched successfully", items: populatedData})
     }catch(error)
     {
         res.status(500).json({message: "error occured while fetching wishlist", error: error.message})
