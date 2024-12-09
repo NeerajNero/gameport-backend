@@ -9,6 +9,7 @@ const adminRoutes = require('./routes/adminRoutes')
 const productRoutes = require('./routes/productRoutes')
 const cartRoutes = require('./routes/cartRoutes')
 const wishlistRoutes = require('./routes/wishlistRoutes')
+const addressRoutes = require('./routes/addressRoutes')
 
 initializeDatabase()
 
@@ -36,6 +37,8 @@ app.use('/fetch', productRoutes)
 app.use('/cart', cartRoutes)
 
 app.use('/wishlist', wishlistRoutes)
+
+app.use('/address', addressRoutes)
 app.listen(3000, () => {
     console.log("server is running on Port: 3000")
 })

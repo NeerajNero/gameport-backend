@@ -1,0 +1,10 @@
+const express = require('express')
+const {addAddress, getAddress, deleteAddress} = require('../controllers/addressController')
+const router = express.Router()
+const checkToken = require('../middleware/checkToken')
+
+router.put('/addAddress', checkToken, addAddress)
+router.get('/address', checkToken, getAddress)
+router.put('/deleteAddress', checkToken, deleteAddress)
+
+module.exports = router
