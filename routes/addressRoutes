@@ -3,7 +3,7 @@ const {addAddress, getAddress, deleteAddress} = require('../controllers/addressC
 const router = express.Router()
 const checkToken = require('../middleware/checkToken')
 
-router.put('/addAddress', checkToken, addAddress)
+router.post('/addAddress', checkToken, addAddress)
 router.get('/address', checkToken, getAddress)
 router.put('/deleteAddress', checkToken, deleteAddress)
 

@@ -3,14 +3,11 @@ const addAddress = async(req,res) => {
     try{
         const {address} = req.body 
         const {user} = req.user
-        console.log("reached backend")
         if(!user.userId || !address){
             return res.status(404).json({message: "user not authenticated or no address added"})
         }
         const findAddress = await Address.findOne({userId: user.userId})
-        console.log(findAddress)
         if(!findAddress){
-            console.log("address not found")
             const newAddress = {
                 userId: user.userId,
                 addresses: [
@@ -21,11 +18,11 @@ const addAddress = async(req,res) => {
             }
             const saveAddress = new Address(newAddress);
             await saveAddress.save();
-            return res.status(201).json({message: "no address was present so added a new address", address})
+            return res.status(201).json({message: "no address was present so added a new address", address: findAddress.addresses[0]})
         }
         findAddress.addresses.push({ address });
         await findAddress.save();
-        return res.status(200).json({message: "address added successfully", address})
+        return res.status(200).json({message: "address added successfully", address: findAddress.addresses[findAddress.addresses.length - 1]})
     }catch(error){
         res.status(500).json({message: "unexpected error occured", error: error.message})
     }
